@@ -24,7 +24,7 @@ namespace WinFormsApp1
             this.FormClosing += MainWindow_FormClosing;
         }
 
-        private async void button1_Click(object sender, EventArgs e)
+        private async void StartScan(object sender, EventArgs e)
         {
             if (IsScanStarted)
             {
