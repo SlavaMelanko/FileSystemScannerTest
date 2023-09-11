@@ -28,61 +28,68 @@
         /// </summary>
         private void InitializeComponent()
         {
-            label1 = new Label();
-            button1 = new Button();
-            comboBox1 = new ComboBox();
-            richTextBox1 = new RichTextBox();
-            SuspendLayout();
+            this.label1 = new System.Windows.Forms.Label();
+            this.button1 = new System.Windows.Forms.Button();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.SuspendLayout();
             // 
             // label1
             // 
-            label1.AutoSize = true;
-            label1.Location = new Point(164, 47);
-            label1.Name = "label1";
-            label1.Size = new Size(169, 15);
-            label1.TabIndex = 0;
-            label1.Text = "Please select a volume to scan:";
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(244, 99);
+            this.label1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(343, 32);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "Please select a volume to scan:";
             // 
             // button1
             // 
-            button1.Location = new Point(499, 34);
-            button1.Name = "button1";
-            button1.Size = new Size(168, 40);
-            button1.TabIndex = 2;
-            button1.Text = "Scan";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += button1_Click;
+            this.button1.Location = new System.Drawing.Point(927, 73);
+            this.button1.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(312, 85);
+            this.button1.TabIndex = 2;
+            this.button1.Text = "Scan";
+            this.button1.UseVisualStyleBackColor = true;
             // 
             // comboBox1
             // 
-            comboBox1.FormattingEnabled = true;
-            comboBox1.Location = new Point(339, 44);
-            comboBox1.Name = "comboBox1";
-            comboBox1.Size = new Size(89, 23);
-            comboBox1.TabIndex = 1;
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Location = new System.Drawing.Point(630, 94);
+            this.comboBox1.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(162, 40);
+            this.comboBox1.TabIndex = 1;
             // 
             // richTextBox1
             // 
-            richTextBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            richTextBox1.Location = new Point(12, 98);
-            richTextBox1.Name = "richTextBox1";
-            richTextBox1.Size = new Size(776, 340);
-            richTextBox1.TabIndex = 3;
-            richTextBox1.Text = "";
+            this.richTextBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.richTextBox1.Location = new System.Drawing.Point(22, 209);
+            this.richTextBox1.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.richTextBox1.Name = "richTextBox1";
+            this.richTextBox1.Size = new System.Drawing.Size(1894, 721);
+            this.richTextBox1.TabIndex = 3;
+            this.richTextBox1.Text = "";
             // 
             // MainWindow
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
-            Controls.Add(richTextBox1);
-            Controls.Add(button1);
-            Controls.Add(comboBox1);
-            Controls.Add(label1);
-            Name = "MainWindow";
-            Text = "FileSystem Scanner";
-            ResumeLayout(false);
-            PerformLayout();
+            this.AutoScaleDimensions = new System.Drawing.SizeF(13F, 32F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(1942, 960);
+            this.Controls.Add(this.richTextBox1);
+            this.Controls.Add(this.button1);
+            this.Controls.Add(this.comboBox1);
+            this.Controls.Add(this.label1);
+            this.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.Name = "MainWindow";
+            this.Text = "FileSystem Scanner";
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
         }
 
         #endregion
