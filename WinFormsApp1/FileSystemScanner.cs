@@ -77,6 +77,11 @@
             _DirectorySet.Clear();
         }
 
+        public bool IsCancellationRequested()
+        {
+            return _CancellationTokenSource.Token.IsCancellationRequested;
+        }
+
         private bool IsDirectoryCanBeChecked(DirectoryInfo directory)
         {
             try
@@ -100,11 +105,6 @@
             {
                 return false;
             }
-        }
-
-        private bool IsCancellationRequested()
-        {
-            return _CancellationTokenSource.Token.IsCancellationRequested;
         }
     }
 }

@@ -20,6 +20,8 @@ namespace WinFormsApp1
             comboBox1.SelectedIndex = 0;
 
             IsScanStarted = false;
+
+            this.FormClosing += MainWindow_FormClosing;
         }
 
         private async void button1_Click(object sender, EventArgs e)
@@ -30,37 +32,63 @@ namespace WinFormsApp1
             }
             else
             {
-                string path = GetVolume();
-
-                button1.Text = "Pause";
+                UpdateBeforeScanning();
 
                 IsScanStarted = true;
 
-                richTextBox1.Clear();
-
-                await Task.Run(async () =>
+                try
                 {
-                    await foreach (var directory in Scanner.ScanAsync(path))
+                    await Task.Run(async () =>
                     {
-                        var totalFilesWithoutSubdirs = directory.GetFiles().Length;
-                        var totalSizeWithoutSubdirs = directory.GetFiles().Sum(f => f.Length) / FileSize.Megabyte;
-                        this.Invoke(() =>
+                        await foreach (var directory in Scanner.ScanAsync(GetVolume()))
                         {
-                            richTextBox1.AppendText($"{directory.FullName}: {totalFilesWithoutSubdirs} files / {totalSizeWithoutSubdirs} MB\n");
-                            richTextBox1.ScrollToCaret();
-                        });
-                    }
-                });
+                            if (Scanner.IsCancellationRequested())
+                            {
+                                break;
+                            }
+
+                            var totalFilesWithoutSubdirs = directory.GetFiles().Length;
+                            var totalSizeWithoutSubdirs = directory.GetFiles().Sum(f => f.Length) / FileSize.Megabyte;
+                            this.Invoke(() =>
+                            {
+                                richTextBox1.AppendText($"{directory.FullName}: {totalFilesWithoutSubdirs} files / {totalSizeWithoutSubdirs} MB\n");
+                                richTextBox1.ScrollToCaret();
+                            });
+                        }
+                    });
+                }
+                catch (Exception)
+                {
+                    ; // TODO: Must be a better solution
+                }
 
                 IsScanStarted = false;
 
-                button1.Text = "Scan";
+                UpdateAfterScanning();
             }
+        }
+
+        private void UpdateBeforeScanning()
+        {
+            button1.Text = "Pause";
+            richTextBox1.Clear();
+            comboBox1.Enabled = false;
+        }
+
+        private void UpdateAfterScanning()
+        {
+            button1.Text = "Scan";
+            comboBox1.Enabled = true;
         }
 
         private string GetVolume()
         {
-            return comboBox1.SelectedItem.ToString() ?? "C:\\"; // remove warning CS8600
+            string volumeLetter = string.Empty;
+            this.Invoke(() =>
+            {
+                volumeLetter = comboBox1.SelectedItem.ToString() ?? "C:\\"; // remove warning CS8600
+            });
+            return volumeLetter;
         }
 
         private void TogglePause()
@@ -74,6 +102,17 @@ namespace WinFormsApp1
             {
                 Scanner.Paused = false;
                 button1.Text = "Pause";
+            }
+        }
+
+        private void MainWindow_FormClosing(object? sender, FormClosingEventArgs e)
+        {
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                if (!Scanner.Paused)
+                {
+                    Scanner.Cancel();
+                }
             }
         }
     }
