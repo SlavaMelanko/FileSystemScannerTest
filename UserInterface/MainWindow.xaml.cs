@@ -15,9 +15,8 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 using Ashampoo;
-using static System.Net.Mime.MediaTypeNames;
 
-namespace WpfApp1
+namespace UserInterface
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
