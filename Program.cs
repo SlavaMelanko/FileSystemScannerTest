@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 using Ashampoo;
 
@@ -10,7 +11,7 @@ class App
 {
     static async Task Main(string[] args)
     {
-        var scanner = new FileSystemScanner();
+        var scanner = new FileSystemScannerPara();
 
         _ = Task.Run(() =>
         {
@@ -38,11 +39,19 @@ class App
 
         string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
-        await foreach (var directory in scanner.ScanAsync(path))
+        Stopwatch stopwatch = new Stopwatch();
+        stopwatch.Start();
+
+        await scanner.ScanAsync("C:\\");
+
+        /*await foreach (var directory in scanner.ScanAsync("C:\\"))
         {
-            var totalFilesWithoutSubdirs = directory.GetFiles().Length;
-            var totalSizeWithoutSubdirs = directory.GetFiles().Sum(f => f.Length) / FileSize.Megabyte;
-            Log.Info($"{directory.FullName}: {totalFilesWithoutSubdirs} files / {totalSizeWithoutSubdirs} MB");
-        }
+            //var totalFilesWithoutSubdirs = directory.GetFiles().Length;
+            //var totalSizeWithoutSubdirs = directory.GetFiles().Sum(f => f.Length) / FileSize.Megabyte;
+            Log.Info($"{directory.FullName}");
+        }*/
+
+        stopwatch.Stop();
+        Log.Info($"Elapsed Time: {stopwatch.Elapsed}");
     }
 }
