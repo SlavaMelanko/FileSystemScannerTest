@@ -9,32 +9,32 @@ using System.Threading.Tasks;
 
 namespace Ashampoo
 {
-    public class QuickFileSystemScanner : FileSystemScanner
+    public class QuickFileSystemScanner : IFileSystemScanner
     {
-        private readonly ConcurrentQueue<ScanResult> _Result;
+        private readonly ConcurrentQueue<ScanResult> _result;
 
         /// <summary>
         /// Additional collection that just removes duplicates.
         /// </summary>
-        private readonly ConcurrentDictionary<string, bool> _UniqueDirNames;
+        private readonly ConcurrentDictionary<string, bool> _uniqueDirNames;
 
         public QuickFileSystemScanner()
         {
-            _Result = new ConcurrentQueue<ScanResult>();
-            _UniqueDirNames = new ConcurrentDictionary<string, bool>();
+            _result = new ConcurrentQueue<ScanResult>();
+            _uniqueDirNames = new ConcurrentDictionary<string, bool>();
         }
 
         public override async IAsyncEnumerable<ScanResult> ScanAsync(ScanOptions scanOptions)
         {
             ScanOptions = scanOptions;
 
-            _Result.Clear();
-            _UniqueDirNames.Clear();
+            _result.Clear();
+            _uniqueDirNames.Clear();
 
             var enumerateOptions = GetEnumerateOptions();
             var parallelOptions = GetParallelOptions();
 
-            bool completed = false;
+            IsRunning = true;
 
             Task.Run(() =>
             {
@@ -62,12 +62,12 @@ namespace Ashampoo
                         if (fileInfo.Length > ScanOptions.MinFileSize)
                         {
                             var dirName = fileInfo.DirectoryName;
-                            if (dirName is not null && !_UniqueDirNames.ContainsKey(dirName))
+                            if (dirName is not null && !_uniqueDirNames.ContainsKey(dirName))
                             {
-                                if (_UniqueDirNames.TryAdd(dirName, true))
+                                if (_uniqueDirNames.TryAdd(dirName, true))
                                 {
                                     DirectoryInfo dirInfo = new DirectoryInfo(dirName);
-                                    _Result.Enqueue(MakeResult(dirInfo));
+                                    _result.Enqueue(MakeResult(dirInfo));
                                 }
                             }
                         }
@@ -79,13 +79,13 @@ namespace Ashampoo
                 }
                 finally
                 {
-                    completed = true;
+                    IsRunning = false;
                 }
             });
 
-            while (!completed)
+            while (IsRunning)
             {
-                if (_Result.TryDequeue(out var result))
+                if (_result.TryDequeue(out var result))
                 {
                     yield return result;
                 }

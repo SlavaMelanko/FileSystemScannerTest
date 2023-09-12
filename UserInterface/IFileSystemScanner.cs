@@ -1,25 +1,50 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Ashampoo
 {
-    public abstract class FileSystemScanner
+    public abstract class IFileSystemScanner
     {
-        protected readonly CancellationTokenSource CancellationToken;
-        protected ScanOptions? ScanOptions;
-        public bool Paused { get; set; } = false;
+        protected readonly CancellationTokenSource CancellationToken = new();
 
-        public FileSystemScanner()
+        protected ScanOptions? ScanOptions;
+
+        protected bool IsRunning = false;
+
+        private readonly object _pauseLock = new();
+        private bool _paused = false;
+
+        public bool Paused
         {
-            CancellationToken = new CancellationTokenSource();
+            get
+            {
+                lock (_pauseLock)
+                {
+                    return _paused;
+                }
+            }
+            set
+            {
+                lock (_pauseLock)
+                {
+                    _paused = value;
+                }
+            }
         }
 
         public abstract IAsyncEnumerable<ScanResult> ScanAsync(ScanOptions scanOptions);
 
         public abstract void Cancel();
+
+        public bool IsScanning()
+        {
+            return IsRunning;
+        }
 
         protected ScanResult MakeResult(DirectoryInfo dirInfo)
         {
@@ -59,7 +84,7 @@ namespace Ashampoo
 
     public static class FilesystemScannerFactory
     {
-        public static FileSystemScanner CreateScanner(ScannerType type)
+        public static IFileSystemScanner CreateScanner(ScannerType type)
         {
             switch (type)
             {

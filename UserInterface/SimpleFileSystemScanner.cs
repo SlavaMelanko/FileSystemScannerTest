@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -8,17 +9,12 @@ using System.Threading.Tasks;
 namespace Ashampoo
 {
     [Obsolete("This class is deprecated and should not be used. Consider using the new QuickFileSystemScanner instead.")]
-    public class SimpleFileSystemScanner : FileSystemScanner
+    public class SimpleFileSystemScanner : IFileSystemScanner
     {
         /// <summary>
         /// Used to filter out duplications on output.
         /// </summary>
-        private readonly HashSet<string> _DirectorySet;
-
-        public SimpleFileSystemScanner()
-        {
-            _DirectorySet = new HashSet<string>();
-        }
+        private readonly HashSet<string> _directorySet = new();
 
         public override async IAsyncEnumerable<ScanResult> ScanAsync(ScanOptions scanOptions)
         {
@@ -27,7 +23,8 @@ namespace Ashampoo
             var directoriesToScan = new Stack<DirectoryInfo>();
             directoriesToScan.Push(new DirectoryInfo(ScanOptions.RootDir));
 
-            _DirectorySet.Clear();
+            IsRunning = true;
+            _directorySet.Clear();
 
             while (directoriesToScan.Count > 0)
             {
@@ -40,9 +37,9 @@ namespace Ashampoo
 
                 foreach (var file in directory.GetFiles().Where(f => f.Length > ScanOptions.MinFileSize))
                 {
-                    if (!_DirectorySet.Contains(directory.FullName)) // filters out duplications
+                    if (!_directorySet.Contains(directory.FullName)) // filters out duplications
                     {
-                        _DirectorySet.Add(directory.FullName);
+                        _directorySet.Add(directory.FullName);
                         yield return MakeResult(directory);
                     }
                 }
@@ -71,7 +68,8 @@ namespace Ashampoo
                 }
             }
 
-            _DirectorySet.Clear();
+            IsRunning = false;
+            _directorySet.Clear();
         }
 
         public override void Cancel()
