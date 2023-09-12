@@ -11,7 +11,7 @@ class App
 {
     static async Task Main(string[] args)
     {
-        var scanner = new FileSystemScannerPara();
+        var scanner = new QuickFileSystemScanner();
 
         _ = Task.Run(() =>
         {
@@ -37,19 +37,15 @@ class App
             }
         });
 
-        string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-
         Stopwatch stopwatch = new Stopwatch();
         stopwatch.Start();
 
-        await scanner.ScanAsync("C:\\");
-
-        /*await foreach (var directory in scanner.ScanAsync("C:\\"))
+        await foreach (var dirInfo in scanner.ScanAsync("C:\\"))
         {
-            //var totalFilesWithoutSubdirs = directory.GetFiles().Length;
-            //var totalSizeWithoutSubdirs = directory.GetFiles().Sum(f => f.Length) / FileSize.Megabyte;
-            Log.Info($"{directory.FullName}");
-        }*/
+            var totalFiles = dirInfo.GetFiles().Length;
+            var totalSize = dirInfo.GetFiles().Sum(f => f.Length) / FileSize.Megabyte;
+            Log.Info($"{dirInfo.FullName}: {totalFiles} / {totalSize} MB");
+        }
 
         stopwatch.Stop();
         Log.Info($"Elapsed Time: {stopwatch.Elapsed}");

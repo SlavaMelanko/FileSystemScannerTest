@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace Ashampoo
 {
-    public class FileSystemScanner
+    [Obsolete("This class is deprecated and should not be used. Consider using the new QuickFileSystemScanner instead.")]
+    public class SimpleFileSystemScanner
     {
         /// <summary>
         /// Used to pause, resume, and cancel the scan process.
@@ -19,7 +20,7 @@ namespace Ashampoo
         /// </summary>
         private readonly HashSet<string> _DirectorySet;
 
-        public FileSystemScanner()
+        public SimpleFileSystemScanner()
         {
             _CancellationTokenSource = new CancellationTokenSource();
             _DirectorySet = new HashSet<string>();
