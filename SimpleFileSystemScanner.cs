@@ -8,13 +8,8 @@ using System.Threading.Tasks;
 namespace Ashampoo
 {
     [Obsolete("This class is deprecated and should not be used. Consider using the new QuickFileSystemScanner instead.")]
-    public class SimpleFileSystemScanner
+    public class SimpleFileSystemScanner : FileSystemScanner
     {
-        /// <summary>
-        /// Used to pause, resume, and cancel the scan process.
-        /// </summary>
-        private readonly CancellationTokenSource _CancellationTokenSource;
-
         /// <summary>
         /// Used to filter out duplications on output.
         /// </summary>
@@ -22,21 +17,15 @@ namespace Ashampoo
 
         public SimpleFileSystemScanner()
         {
-            _CancellationTokenSource = new CancellationTokenSource();
             _DirectorySet = new HashSet<string>();
         }
 
-        public bool Paused { get; set; } = false;
-
-        public void Cancel()
+        public override async IAsyncEnumerable<ScanResult> ScanAsync(ScanOptions scanOptions)
         {
-            _CancellationTokenSource.Cancel();
-        }
+            ScanOptions = scanOptions;
 
-        public async IAsyncEnumerable<DirectoryInfo> ScanAsync(string path)
-        {
             var directoriesToScan = new Stack<DirectoryInfo>();
-            directoriesToScan.Push(new DirectoryInfo(path));
+            directoriesToScan.Push(new DirectoryInfo(ScanOptions.RootDir));
 
             _DirectorySet.Clear();
 
@@ -49,12 +38,12 @@ namespace Ashampoo
                     continue;
                 }
 
-                foreach (var file in directory.GetFiles().Where(f => f.Length > FileSize.TenMegabytes))
+                foreach (var file in directory.GetFiles().Where(f => f.Length > ScanOptions.MinFileSize))
                 {
                     if (!_DirectorySet.Contains(directory.FullName)) // filters out duplications
                     {
                         _DirectorySet.Add(directory.FullName);
-                        yield return directory;
+                        yield return MakeResult(directory);
                     }
                 }
 
@@ -85,6 +74,11 @@ namespace Ashampoo
             _DirectorySet.Clear();
         }
 
+        public override void Cancel()
+        {
+            CancellationToken.Cancel();
+        }
+
         private bool IsDirectoryCanBeChecked(DirectoryInfo directory)
         {
             try
@@ -112,7 +106,7 @@ namespace Ashampoo
 
         private bool IsCancellationRequested()
         {
-            return _CancellationTokenSource.Token.IsCancellationRequested;
+            return CancellationToken.Token.IsCancellationRequested;
         }
     }
 }

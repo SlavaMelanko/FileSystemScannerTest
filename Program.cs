@@ -11,7 +11,7 @@ class App
 {
     static async Task Main(string[] args)
     {
-        var scanner = new QuickFileSystemScanner();
+        var scanner = FilesystemScannerFactory.CreateScanner(ScannerType.Quick);
 
         _ = Task.Run(() =>
         {
@@ -37,17 +37,20 @@ class App
             }
         });
 
+        var options = new ScanOptions
+        {
+            RootDir = "C:\\"
+        };
+
         Stopwatch stopwatch = new Stopwatch();
         stopwatch.Start();
 
-        await foreach (var dirInfo in scanner.ScanAsync("C:\\"))
+        await foreach (var result in scanner.ScanAsync(options))
         {
-            var totalFiles = dirInfo.GetFiles().Length;
-            var totalSize = dirInfo.GetFiles().Sum(f => f.Length) / FileSize.Megabyte;
-            Log.Info($"{dirInfo.FullName}: {totalFiles} / {totalSize} MB");
+            Log.Info($"{result.DirPath}: {result.FileCount} / {result.Size} MB");
         }
 
         stopwatch.Stop();
-        Log.Info($"Elapsed Time: {stopwatch.Elapsed}");
+        Log.Info($"\nElapsed Time: {stopwatch.Elapsed}");
     }
 }

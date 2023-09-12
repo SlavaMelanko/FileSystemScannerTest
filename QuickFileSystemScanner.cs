@@ -9,32 +9,27 @@ using System.Threading.Tasks;
 
 namespace Ashampoo
 {
-    public class ScanResult
+    public class QuickFileSystemScanner : FileSystemScanner
     {
-        public string DirPath { get; set; } = string.Empty;
-        public int TotalFiles { get; set; } = 0;
-        public long DirSize { get; set; } = 0;
-    }
+        private readonly ConcurrentQueue<ScanResult> _Result;
 
-    public class QuickFileSystemScanner
-    {
-        private readonly CancellationTokenSource _CancellationToken;
-        private readonly ConcurrentQueue<DirectoryInfo> _FoundDirs;
-        private readonly ConcurrentDictionary<string, bool> _UniqueDirs;
-
-        public bool Paused { get; set; } = false;
+        /// <summary>
+        /// Additional collection that just removes duplicates.
+        /// </summary>
+        private readonly ConcurrentDictionary<string, bool> _UniqueDirNames;
 
         public QuickFileSystemScanner()
         {
-            _CancellationToken = new CancellationTokenSource();
-            _FoundDirs = new ConcurrentQueue<DirectoryInfo>();
-            _UniqueDirs = new ConcurrentDictionary<string, bool>();
+            _Result = new ConcurrentQueue<ScanResult>();
+            _UniqueDirNames = new ConcurrentDictionary<string, bool>();
         }
 
-        public async IAsyncEnumerable<DirectoryInfo> ScanAsync(string volume)
+        public override async IAsyncEnumerable<ScanResult> ScanAsync(ScanOptions scanOptions)
         {
-            _FoundDirs.Clear();
-            _UniqueDirs.Clear();
+            ScanOptions = scanOptions;
+
+            _Result.Clear();
+            _UniqueDirNames.Clear();
 
             var enumerateOptions = GetEnumerateOptions();
             var parallelOptions = GetParallelOptions();
@@ -45,7 +40,7 @@ namespace Ashampoo
             {
                 try
                 {
-                    Parallel.ForEach(Directory.EnumerateFiles(volume, "*", enumerateOptions), parallelOptions, file =>
+                    Parallel.ForEach(Directory.EnumerateFiles(ScanOptions.RootDir, "*", enumerateOptions), parallelOptions, file =>
                     {
                         while (Paused)
                         {
@@ -64,15 +59,15 @@ namespace Ashampoo
                         }
 
                         var fileInfo = new FileInfo(file);
-                        if (fileInfo.Length > FileSize.TenMegabytes)
+                        if (fileInfo.Length > ScanOptions.MinFileSize)
                         {
                             var dirName = fileInfo.DirectoryName;
-                            if (dirName != null && !_UniqueDirs.ContainsKey(dirName))
+                            if (dirName is not null && !_UniqueDirNames.ContainsKey(dirName))
                             {
-                                if (_UniqueDirs.TryAdd(dirName, true))
+                                if (_UniqueDirNames.TryAdd(dirName, true))
                                 {
                                     DirectoryInfo dirInfo = new DirectoryInfo(dirName);
-                                    _FoundDirs.Enqueue(dirInfo);
+                                    _Result.Enqueue(MakeResult(dirInfo));
                                 }
                             }
                         }
@@ -90,16 +85,16 @@ namespace Ashampoo
 
             while (!completed)
             {
-                if (_FoundDirs.TryDequeue(out var dirInfo))
+                if (_Result.TryDequeue(out var result))
                 {
-                    yield return dirInfo;
+                    yield return result;
                 }
             }
         }
 
-        public void Cancel()
+        public override void Cancel()
         {
-            _CancellationToken.Cancel();
+            CancellationToken.Cancel();
         }
 
         private EnumerationOptions GetEnumerateOptions()
@@ -118,8 +113,8 @@ namespace Ashampoo
         {
             var parallelOptions = new ParallelOptions
             {
-                CancellationToken = _CancellationToken.Token,
-                MaxDegreeOfParallelism = Environment.ProcessorCount
+                CancellationToken = CancellationToken.Token,
+                MaxDegreeOfParallelism = ScanOptions?.ProcessorCount ?? 1
             };
 
             return parallelOptions;

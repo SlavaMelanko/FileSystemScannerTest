@@ -12,7 +12,5 @@ namespace Ashampoo
         public const long Kilobyte = 1024;
         public const long Megabyte = Kilobyte * 1024;
         public const long Gigabyte = Megabyte * 1024;
-
-        public const long TenMegabytes = 10 * Megabyte;
     }
 }
