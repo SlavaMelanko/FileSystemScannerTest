@@ -72,11 +72,6 @@ namespace Ashampoo
             _directorySet.Clear();
         }
 
-        public override void Cancel()
-        {
-            CancellationToken.Cancel();
-        }
-
         private bool IsDirectoryCanBeChecked(DirectoryInfo directory)
         {
             try

@@ -11,18 +11,12 @@ namespace Ashampoo
 {
     public class QuickFileSystemScanner : IFileSystemScanner
     {
-        private readonly ConcurrentQueue<ScanResult> _result;
+        private readonly ConcurrentQueue<ScanResult> _result = new();
 
         /// <summary>
         /// Additional collection that just removes duplicates.
         /// </summary>
-        private readonly ConcurrentDictionary<string, bool> _uniqueDirNames;
-
-        public QuickFileSystemScanner()
-        {
-            _result = new ConcurrentQueue<ScanResult>();
-            _uniqueDirNames = new ConcurrentDictionary<string, bool>();
-        }
+        private readonly ConcurrentDictionary<string, bool> _uniqueDirNames = new();
 
         public override async IAsyncEnumerable<ScanResult> ScanAsync(ScanOptions scanOptions)
         {
@@ -90,11 +84,6 @@ namespace Ashampoo
                     yield return result;
                 }
             }
-        }
-
-        public override void Cancel()
-        {
-            CancellationToken.Cancel();
         }
 
         private EnumerationOptions GetEnumerateOptions()

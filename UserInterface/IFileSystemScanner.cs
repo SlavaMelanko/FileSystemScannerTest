@@ -39,7 +39,10 @@ namespace Ashampoo
 
         public abstract IAsyncEnumerable<ScanResult> ScanAsync(ScanOptions scanOptions);
 
-        public abstract void Cancel();
+        public void Cancel()
+        {
+            CancellationToken.Cancel();
+        }
 
         public bool IsRunning()
         {

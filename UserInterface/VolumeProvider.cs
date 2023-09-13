@@ -7,11 +7,9 @@ namespace Ashampoo
     {
         public static List<string> GetVolumeList()
         {
-            List<string> systemDriveLetters = new List<string>();
+            List<string> systemDriveLetters = new();
 
-            DriveInfo[] drives = DriveInfo.GetDrives();
-
-            foreach (DriveInfo drive in drives)
+            foreach (DriveInfo drive in DriveInfo.GetDrives())
             {
                 if (drive.IsReady)
                 {
