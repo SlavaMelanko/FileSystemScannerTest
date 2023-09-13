@@ -14,7 +14,7 @@ namespace Ashampoo
 
         protected ScanOptions? ScanOptions;
 
-        protected bool IsRunning = false;
+        protected bool IsInProgress = false;
 
         private readonly object _pauseLock = new();
         private bool _paused = false;
@@ -41,9 +41,9 @@ namespace Ashampoo
 
         public abstract void Cancel();
 
-        public bool IsScanning()
+        public bool IsRunning()
         {
-            return IsRunning;
+            return IsInProgress;
         }
 
         protected ScanResult MakeResult(DirectoryInfo dirInfo)
@@ -72,8 +72,15 @@ namespace Ashampoo
     public class ScanOptions
     {
         public string RootDir { get; set; } = string.Empty;
-        public long MinFileSize { get; set; } = 10 * FileSize.Megabyte;
         public int ProcessorCount { get; set; } = Environment.ProcessorCount;
+        public CompositeFilter CompositeFilter = new();
+
+        public ScanOptions(string rootDir)
+        {
+            RootDir = rootDir;
+
+            CompositeFilter.AddFilter(new SizeFilter(10 * FileSize.Megabyte));
+        }
     }
 
     public enum ScannerType

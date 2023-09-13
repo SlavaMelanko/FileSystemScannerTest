@@ -23,7 +23,7 @@ namespace Ashampoo
             var directoriesToScan = new Stack<DirectoryInfo>();
             directoriesToScan.Push(new DirectoryInfo(ScanOptions.RootDir));
 
-            IsRunning = true;
+            IsInProgress = true;
             _directorySet.Clear();
 
             while (directoriesToScan.Count > 0)
@@ -35,7 +35,7 @@ namespace Ashampoo
                     continue;
                 }
 
-                foreach (var file in directory.GetFiles().Where(f => f.Length > ScanOptions.MinFileSize))
+                foreach (var file in directory.GetFiles().Where(f => ScanOptions.CompositeFilter.Matches(f)))
                 {
                     if (!_directorySet.Contains(directory.FullName)) // filters out duplications
                     {
@@ -68,7 +68,7 @@ namespace Ashampoo
                 }
             }
 
-            IsRunning = false;
+            IsInProgress = false;
             _directorySet.Clear();
         }
 

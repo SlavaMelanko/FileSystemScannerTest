@@ -23,13 +23,11 @@ namespace UserInterface
     /// </summary>
     public partial class MainWindow : Window
     {
-        private Ashampoo.IFileSystemScanner Scanner;
+        private Ashampoo.IFileSystemScanner Scanner = FilesystemScannerFactory.CreateScanner(ScannerType.Quick);
 
         public MainWindow()
         {
             InitializeComponent();
-
-            Scanner = FilesystemScannerFactory.CreateScanner(ScannerType.Quick);
 
             VolumeComboBox.ItemsSource = Ashampoo.VolumeProvider.GetVolumeList();
             VolumeComboBox.SelectedIndex = 0;
@@ -37,7 +35,7 @@ namespace UserInterface
 
         private async void StartScanning(object sender, RoutedEventArgs e)
         {
-            if (Scanner.IsScanning())
+            if (Scanner.IsRunning())
             {
                 TogglePause();
             }
@@ -47,12 +45,9 @@ namespace UserInterface
 
                 await Task.Run(async () =>
                 {
-                    var options = new ScanOptions
-                    {
-                        RootDir = GetSelectedVolume()
-                    };
+                    var options = new ScanOptions(GetRootPath());
 
-                    Stopwatch stopwatch = new Stopwatch();
+                    Stopwatch stopwatch = new();
                     stopwatch.Start();
 
                     await foreach (var result in Scanner.ScanAsync(options))
@@ -68,7 +63,7 @@ namespace UserInterface
             }
         }
 
-        private string GetSelectedVolume()
+        private string GetRootPath()
         {
             return Dispatcher.Invoke(() => VolumeComboBox.SelectedValue as string) ?? string.Empty;
         }

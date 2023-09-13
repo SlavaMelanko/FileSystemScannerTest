@@ -34,7 +34,7 @@ namespace Ashampoo
             var enumerateOptions = GetEnumerateOptions();
             var parallelOptions = GetParallelOptions();
 
-            IsRunning = true;
+            IsInProgress = true;
 
             Task.Run(() =>
             {
@@ -59,7 +59,7 @@ namespace Ashampoo
                         }
 
                         var fileInfo = new FileInfo(file);
-                        if (fileInfo.Length > ScanOptions.MinFileSize)
+                        if (ScanOptions.CompositeFilter.Matches(fileInfo))
                         {
                             var dirName = fileInfo.DirectoryName;
                             if (dirName is not null && !_uniqueDirNames.ContainsKey(dirName))
@@ -79,11 +79,11 @@ namespace Ashampoo
                 }
                 finally
                 {
-                    IsRunning = false;
+                    IsInProgress = false;
                 }
             });
 
-            while (IsRunning)
+            while (IsInProgress)
             {
                 if (_result.TryDequeue(out var result))
                 {
